@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Voxify-AI</title>
+<link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+<div class="chat-app">
+  <header class="chat-header">
+    <h1>Voxify-AI</h1>
+    <p>Your voice-enabled assistant</p>
+  </header>
+
+  <div id="chatWindow" class="chat-window"></div>
+
+  <div class="chat-input-row">
+    <input type="text" id="textInput" placeholder="Type a message..."/>
+    <button id="sendBtn">Send</button>
+    <button id="micBtn" title="Speak">🎤</button>
+  </div>
+
+  <p id="status" class="status"></p>
+</div>
+
+<script src="main.js"></script>
+</body>
+</html>

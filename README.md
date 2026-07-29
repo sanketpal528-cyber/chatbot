@@ -1,73 +1,96 @@
-# Voxify-AI
+# AI Chatbot (FastAPI + OpenAI)
 
-A voice-enabled AI chatbot with a FastAPI backend and a lightweight
-HTML/JS frontend. Chat by typing or speaking — Voxify replies in text
-and speaks the answer back to you.
+Deploy-ready chatbot web app with a FastAPI backend and a simple HTML/CSS/JS frontend.
 
 ## Features
 
-- 💬 Text chat via a REST API (`/chat`)
-- 🎤 Voice input in the browser (Web Speech API) — no extra setup needed
-- 🎙️ Server-side voice upload endpoint (`/voice-chat`) for non-browser clients
-- 🔊 Spoken replies via the browser's speech synthesis
-- 🧠 Per-session conversation memory
-- 🛠️ Pluggable "tools" (time, date, and easy to add more)
-- 📄 Clean seam for swapping in a real LLM later
+- FastAPI backend with `POST /api/chat`
+- OpenAI integration using `OPENAI_API_KEY`
+- Configurable model via `OPENAI_MODEL` (default: `gpt-4o-mini`)
+- Graceful error handling for empty input, missing key, and API failures
+- Browser chat UI served by the backend at `/`
+- Render deployment config included (`render.yaml`)
 
-## Project Structure
+## Project Files
 
-```
-Voxify-AI/
-├── backend/       FastAPI app, chatbot logic, speech transcription
-├── frontend/      HTML/CSS/JS chat UI with mic button
-├── database/      SQLite schema (for future durable storage)
-├── memory/        Session conversation history
-├── uploads/        Uploaded audio files land here
-├── prompts/       System prompt / persona definitions
-├── tools/         Small callable tools the chatbot can invoke
-├── config/        Centralized settings from .env
-├── logs/          Application logs
-├── tests/         Pytest test suite
-├── docs/          Architecture documentation
-├── requirements.txt
-├── .env
-├── main.py
-└── README.md
-```
+- `/app.py` - FastAPI app, routes, OpenAI call
+- `/main.py` - app runner (`0.0.0.0:$PORT`)
+- `/index.html`, `/style.css`, `/main.js` - chat frontend
+- `/requirements.txt` - Python dependencies
+- `/.env.example` - required environment variables
+- `/render.yaml` - Render deployment configuration
 
-See `docs/architecture.md` for a full breakdown of how the pieces fit together.
+## Local Setup
 
-## Setup
+### 1) Create and activate a virtual environment
 
 ```bash
-# 1. Create a virtual environment (recommended)
-python -m venv venv
-source venv/bin/activate      # Windows: venv\Scripts\activate
+python -m venv .venv
+source .venv/bin/activate
+# Windows (PowerShell): .venv\Scripts\Activate.ps1
+```
 
-# 2. Install dependencies
+### 2) Install dependencies
+
+```bash
 pip install -r requirements.txt
+```
 
-# 3. Run the backend
+### 3) Configure environment variables
+
+```bash
+cp .env.example .env
+```
+
+Edit `.env` and set:
+
+- `OPENAI_API_KEY` (required)
+- `OPENAI_MODEL` (optional, defaults to `gpt-4o-mini`)
+- `PORT` (optional, defaults to `8000`)
+
+### 4) Run locally
+
+```bash
 python main.py
 ```
 
-The API will be live at `http://localhost:8000` (docs at `/docs`).
+App URL: `http://localhost:8000`
 
-## Using the app
+## API
 
-Open `frontend/index.html` directly in your browser (double-click it,
-or use a simple static server). Type a message and press Send, or
-click the 🎤 button and speak — your browser will transcribe it and
-send it to Voxify automatically.
+### `POST /api/chat`
 
-## Running tests
+Request body:
 
-```bash
-pytest
+```json
+{ "message": "Hello" }
 ```
 
-## Next steps
+Response body:
 
-- Swap the rule-based replies in `backend/chatbot.py` for a real LLM call
-- Add more tools in `tools/tool_registry.py`
-- Move session memory from JSON to the SQLite database in `database/db.py`
+```json
+{ "reply": "Hi! How can I help you?" }
+```
+
+## Deploy on Render
+
+1. Push the repository to GitHub.
+2. In Render, create a new **Web Service** from the repo.
+3. Render reads `render.yaml` automatically.
+4. Set environment variable `OPENAI_API_KEY` in Render dashboard.
+5. Deploy.
+
+Render will run:
+
+- Build: `pip install -r requirements.txt`
+- Start: `python main.py`
+
+## Troubleshooting
+
+- **`OPENAI_API_KEY is not configured.`**
+  - Ensure `.env` exists locally and `OPENAI_API_KEY` is set.
+  - Ensure Render environment variable is configured.
+- **`Failed to get AI response from OpenAI.`**
+  - Check key validity, model name, internet access, and OpenAI service status.
+- **Port/bind issues on hosting**
+  - App already binds to `0.0.0.0` and uses `PORT` env var.

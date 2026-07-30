@@ -4,244 +4,87 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>Voxify AI — Full Assistant</title>
-<meta name="description" content="Voxify AI — Chat, Voice, PDF, Notes, Code, Study, Web Search"/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <link rel="stylesheet" href="style.css"/>
 </head>
-<body>
+<body class="dark">
 
-<!-- API KEY SETUP MODAL -->
-<div id="setupModal" class="modal-overlay hidden">
-  <div class="modal-box">
-    <div class="modal-logo">🤖</div>
+<!-- SETUP MODAL -->
+<div id="setupModal" class="overlay">
+  <div class="setup-box">
+    <div class="setup-logo">🤖</div>
     <h2>Welcome to Voxify AI</h2>
-    <p>Enter your <strong>Google Gemini API key</strong> to unlock all features.<br/>
-    Your key is stored <em>only in your browser</em> — never sent anywhere else.</p>
-    <div class="modal-input-row">
-      <input type="password" id="apiKeyInput" placeholder="Paste your Gemini API key here..."/>
-      <button onclick="toggleKeyVis()" class="eye-btn" id="eyeBtn"><i class="fa fa-eye"></i></button>
+    <p>Enter your <strong>Google Gemini API key</strong> to get started.<br/>
+    Stored only in your browser — never sent anywhere else.</p>
+    <div class="key-row">
+      <input type="password" id="apiKeyInput" placeholder="Paste Gemini API key..."/>
+      <button onclick="toggleVis()" class="vis-btn" id="visBtn"><i class="fa fa-eye"></i></button>
     </div>
-    <a href="https://aistudio.google.com/apikey" target="_blank" class="modal-link">
-      <i class="fa fa-external-link-alt"></i> Get a free API key from Google AI Studio
+    <a href="https://aistudio.google.com/apikey" target="_blank" class="ext-link">
+      <i class="fa fa-external-link-alt"></i> Get free key from Google AI Studio
     </a>
-    <button class="btn-start" onclick="saveKey()">Start Using Voxify <i class="fa fa-arrow-right"></i></button>
+    <button class="start-btn" onclick="saveKey()">Launch Voxify <i class="fa fa-arrow-right"></i></button>
   </div>
 </div>
 
-<!-- MAIN APP -->
-<div class="app" id="app">
+<!-- APP -->
+<div class="app hidden" id="app">
 
   <!-- SIDEBAR -->
   <aside class="sidebar" id="sidebar">
-    <div class="sb-header">
-      <div class="sb-brand">
-        <div class="sb-icon">V</div>
-        <div>
-          <div class="sb-title">Voxify AI</div>
-          <div class="sb-sub" id="modelBadge">gemini-1.5-flash</div>
-        </div>
-      </div>
-      <button class="sidebar-close" onclick="toggleSidebar()"><i class="fa fa-xmark"></i></button>
+    <div class="sb-top">
+      <div class="sb-brand"><span class="sb-ico">V</span><span class="sb-name">Voxify AI</span></div>
+      <button class="sb-close" onclick="closeSB()"><i class="fa fa-xmark"></i></button>
     </div>
-
     <nav class="sb-nav">
-      <button class="nav-btn active" data-mode="chat"     onclick="switchMode('chat')"><i class="fa fa-message"></i> Chat</button>
-      <button class="nav-btn"        data-mode="voice"    onclick="switchMode('voice')"><i class="fa fa-microphone"></i> Voice</button>
-      <button class="nav-btn"        data-mode="pdf"      onclick="switchMode('pdf')"><i class="fa fa-file-pdf"></i> PDF Reader</button>
-      <button class="nav-btn"        data-mode="notes"    onclick="switchMode('notes')"><i class="fa fa-note-sticky"></i> Notes</button>
-      <button class="nav-btn"        data-mode="code"     onclick="switchMode('code')"><i class="fa fa-code"></i> Code</button>
-      <button class="nav-btn"        data-mode="study"    onclick="switchMode('study')"><i class="fa fa-graduation-cap"></i> Study</button>
-      <button class="nav-btn"        data-mode="search"   onclick="switchMode('search')"><i class="fa fa-magnifying-glass"></i> Web Search</button>
-      <button class="nav-btn"        data-mode="planner"  onclick="switchMode('planner')"><i class="fa fa-list-check"></i> Planner</button>
+      <div class="nav-group-label">Main</div>
+      <button class="nb active" data-s="home"       onclick="go('home')">      <i class="fa fa-house"></i>       Home</button>
+      <button class="nb"        data-s="chat"       onclick="go('chat')">      <i class="fa fa-message"></i>     Chat</button>
+      <button class="nb"        data-s="memory"     onclick="go('memory')">    <i class="fa fa-brain"></i>       Memory</button>
+      <button class="nb"        data-s="voice"      onclick="go('voice')">     <i class="fa fa-microphone"></i>  Voice</button>
+      <div class="nav-group-label">Tools</div>
+      <button class="nb"        data-s="study"      onclick="go('study')">     <i class="fa fa-graduation-cap"></i> Study</button>
+      <button class="nb"        data-s="coding"     onclick="go('coding')">    <i class="fa fa-code"></i>        Coding</button>
+      <button class="nb"        data-s="files"      onclick="go('files')">     <i class="fa fa-folder-open"></i> Files</button>
+      <button class="nb"        data-s="internet"   onclick="go('internet')">  <i class="fa fa-globe"></i>       Internet</button>
+      <div class="nav-group-label">Productivity</div>
+      <button class="nb"        data-s="tasks"      onclick="go('tasks')">     <i class="fa fa-list-check"></i>  Tasks</button>
+      <button class="nb"        data-s="notes"      onclick="go('notes')">     <i class="fa fa-note-sticky"></i> Notes</button>
+      <button class="nb"        data-s="calendar"   onclick="go('calendar')">  <i class="fa fa-calendar"></i>    Calendar</button>
+      <div class="nav-group-label">More</div>
+      <button class="nb"        data-s="comms"      onclick="go('comms')">     <i class="fa fa-envelope"></i>    Communication</button>
+      <button class="nb"        data-s="utils"      onclick="go('utils')">     <i class="fa fa-calculator"></i>  Utilities</button>
+      <button class="nb"        data-s="aitools"    onclick="go('aitools')">   <i class="fa fa-wand-magic-sparkles"></i> AI Tools</button>
+      <button class="nb"        data-s="computer"   onclick="go('computer')">  <i class="fa fa-desktop"></i>     Computer</button>
+      <button class="nb"        data-s="security"   onclick="go('security')">  <i class="fa fa-shield-halved"></i> Security</button>
+      <button class="nb"        data-s="analytics"  onclick="go('analytics')"> <i class="fa fa-chart-bar"></i>   Analytics</button>
+      <button class="nb"        data-s="settings"   onclick="go('settings')">  <i class="fa fa-gear"></i>        Settings</button>
     </nav>
-
-    <div class="sb-section-label">Memory</div>
-    <div class="memory-info">
-      <span id="memCount">0 turns</span>
-      <button onclick="clearMemory()" class="mem-clear"><i class="fa fa-trash"></i> Clear</button>
-    </div>
-
-    <div class="sb-section-label">Settings</div>
-    <div class="setting-row">
-      <span>Voice Output</span>
-      <label class="toggle"><input type="checkbox" id="voiceOut" checked/><span class="tslider"></span></label>
-    </div>
-    <div class="setting-row">
-      <span>Model</span>
-      <select id="modelSel" onchange="setModel()" class="mini-select">
-        <option value="gemini-3.5-flash-lite">3.5 Flash Lite (Fast)</option>
-        <option value="gemini-3.6-flash">3.6 Flash (Latest)</option>
-      </select>
-    </div>
-    <div class="setting-row">
-      <button onclick="changeKey()" class="link-btn"><i class="fa fa-key"></i> Change API Key</button>
+    <div class="sb-footer">
+      <div class="sb-status"><span class="sdot"></span><span id="statusTxt">Ready</span></div>
+      <div class="sb-model" id="sbModel">gemini-3.6-flash</div>
     </div>
   </aside>
 
   <!-- MAIN -->
-  <main class="main" id="mainArea">
-
-    <!-- TOP BAR -->
+  <main class="main" id="main">
     <div class="topbar">
-      <button class="menu-btn" onclick="toggleSidebar()"><i class="fa fa-bars"></i></button>
-      <div class="mode-title" id="modeTitle"><i class="fa fa-message"></i> Chat</div>
-      <div class="topbar-right">
-        <div class="status-dot-wrap"><span class="sdot"></span><span id="statusText">Ready</span></div>
-        <button class="icon-action" onclick="clearChat()" title="Clear chat"><i class="fa fa-broom"></i></button>
+      <button class="tb-menu" onclick="toggleSB()"><i class="fa fa-bars"></i></button>
+      <div class="tb-title" id="tbTitle"><i class="fa fa-house"></i> Home</div>
+      <div class="tb-right">
+        <button class="tb-btn" onclick="go('chat')" title="Quick Chat"><i class="fa fa-message"></i></button>
+        <button class="tb-btn" id="themeBtn" onclick="toggleTheme()" title="Theme"><i class="fa fa-moon"></i></button>
+        <button class="tb-btn" onclick="go('settings')" title="Settings"><i class="fa fa-gear"></i></button>
       </div>
     </div>
-
-    <!-- ══ CHAT MODE ══ -->
-    <div id="mode-chat" class="mode-panel active">
-      <div id="chatWindow" class="chat-window"></div>
-      <div class="input-area">
-        <div class="input-box">
-          <button id="micBtn" class="mic-btn" title="Voice input" onclick="toggleMic()"><i class="fa fa-microphone"></i></button>
-          <textarea id="chatInput" rows="1" placeholder="Ask anything..." onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
-          <button class="send-btn" onclick="sendChat()"><i class="fa fa-paper-plane"></i></button>
-        </div>
-        <div class="input-hint">Shift+Enter for new line · Enter to send · 🎤 for voice</div>
-      </div>
-    </div>
-
-    <!-- ══ VOICE MODE ══ -->
-    <div id="mode-voice" class="mode-panel">
-      <div class="voice-center">
-        <button id="voiceOrb" class="voice-orb" onclick="toggleVoiceMode()">
-          <i class="fa fa-microphone" id="voiceOrbIcon"></i>
-        </button>
-        <div id="voiceStatus" class="voice-status">Click orb to speak</div>
-        <div id="voiceTranscript" class="voice-transcript"></div>
-        <div id="voiceResponse" class="voice-response"></div>
-      </div>
-    </div>
-
-    <!-- ══ PDF MODE ══ -->
-    <div id="mode-pdf" class="mode-panel">
-      <div class="pdf-panel">
-        <div class="pdf-upload-area" id="pdfUploadArea">
-          <input type="file" id="pdfFile" accept=".pdf" onchange="loadPDF(event)" hidden/>
-          <label for="pdfFile" class="pdf-upload-label">
-            <i class="fa fa-file-pdf"></i>
-            <span>Drop a PDF here or click to upload</span>
-            <small>Ask questions about the document using AI</small>
-          </label>
-        </div>
-        <div id="pdfChat" class="pdf-chat hidden">
-          <div class="pdf-info" id="pdfInfo"></div>
-          <div id="pdfMessages" class="chat-window"></div>
-          <div class="input-area">
-            <div class="input-box">
-              <textarea id="pdfInput" rows="1" placeholder="Ask about the PDF..." onkeydown="handlePdfKey(event)" oninput="autoResize(this)"></textarea>
-              <button class="send-btn" onclick="askPDF()"><i class="fa fa-paper-plane"></i></button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ══ NOTES MODE ══ -->
-    <div id="mode-notes" class="mode-panel">
-      <div class="notes-panel">
-        <div class="notes-toolbar">
-          <button class="note-btn" onclick="newNote()"><i class="fa fa-plus"></i> New</button>
-          <button class="note-btn" onclick="saveNote()"><i class="fa fa-floppy-disk"></i> Save</button>
-          <button class="note-btn" onclick="aiEnhanceNote()"><i class="fa fa-wand-magic-sparkles"></i> AI Enhance</button>
-          <button class="note-btn danger" onclick="deleteNote()"><i class="fa fa-trash"></i> Delete</button>
-        </div>
-        <div class="notes-layout">
-          <div class="notes-list" id="notesList"></div>
-          <div class="notes-editor">
-            <input type="text" id="noteTitle" placeholder="Note title..." class="note-title-input"/>
-            <textarea id="noteBody" placeholder="Start writing..." class="note-body"></textarea>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ══ CODE MODE ══ -->
-    <div id="mode-code" class="mode-panel">
-      <div id="codeMessages" class="chat-window"></div>
-      <div class="input-area">
-        <div class="code-quick-btns">
-          <button onclick="codeQuick('Explain this code: ')">Explain</button>
-          <button onclick="codeQuick('Debug this code: ')">Debug</button>
-          <button onclick="codeQuick('Optimize this code: ')">Optimize</button>
-          <button onclick="codeQuick('Convert to Python: ')">→ Python</button>
-          <button onclick="codeQuick('Write unit tests for: ')">Tests</button>
-          <button onclick="codeQuick('Add comments to: ')">Comments</button>
-        </div>
-        <div class="input-box">
-          <textarea id="codeInput" rows="1" placeholder="Paste code or describe what you need..." onkeydown="handleCodeKey(event)" oninput="autoResize(this)"></textarea>
-          <button class="send-btn" onclick="sendCode()"><i class="fa fa-paper-plane"></i></button>
-        </div>
-      </div>
-    </div>
-
-    <!-- ══ STUDY MODE ══ -->
-    <div id="mode-study" class="mode-panel">
-      <div class="study-panel">
-        <div class="study-tabs">
-          <button class="stab active" onclick="setStudyTab('explain',this)">Explain</button>
-          <button class="stab" onclick="setStudyTab('quiz',this)">Quiz Me</button>
-          <button class="stab" onclick="setStudyTab('summary',this)">Summarize</button>
-          <button class="stab" onclick="setStudyTab('flashcard',this)">Flashcards</button>
-          <button class="stab" onclick="setStudyTab('practice',this)">Practice Q</button>
-        </div>
-        <div id="studyMessages" class="chat-window"></div>
-        <div class="input-area">
-          <div class="input-box">
-            <textarea id="studyInput" rows="1" placeholder="Enter a topic or paste text to study..." onkeydown="handleStudyKey(event)" oninput="autoResize(this)"></textarea>
-            <button class="send-btn" onclick="sendStudy()"><i class="fa fa-paper-plane"></i></button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ══ SEARCH MODE ══ -->
-    <div id="mode-search" class="mode-panel">
-      <div id="searchMessages" class="chat-window"></div>
-      <div class="input-area">
-        <div class="input-box">
-          <textarea id="searchInput" rows="1" placeholder="Ask anything — Voxify will research and answer..." onkeydown="handleSearchKey(event)" oninput="autoResize(this)"></textarea>
-          <button class="send-btn" onclick="sendSearch()"><i class="fa fa-magnifying-glass"></i></button>
-        </div>
-        <div class="input-hint">Voxify uses AI knowledge + real-time context to answer research questions</div>
-      </div>
-    </div>
-
-    <!-- ══ PLANNER MODE ══ -->
-    <div id="mode-planner" class="mode-panel">
-      <div class="planner-panel">
-        <div class="planner-top">
-          <div class="planner-left">
-            <h3>Tasks & Reminders</h3>
-            <div class="task-input-row">
-              <input type="text" id="taskInput" placeholder="Add a task..." onkeydown="if(event.key==='Enter')addTask()"/>
-              <input type="datetime-local" id="taskTime"/>
-              <button onclick="addTask()" class="add-task-btn"><i class="fa fa-plus"></i></button>
-            </div>
-            <div id="taskList" class="task-list"></div>
-          </div>
-          <div class="planner-right">
-            <h3>AI Planner</h3>
-            <div id="plannerMessages" class="chat-window small"></div>
-            <div class="input-box">
-              <textarea id="plannerInput" rows="1" placeholder="Describe your goal — AI will make a plan..." onkeydown="handlePlannerKey(event)" oninput="autoResize(this)"></textarea>
-              <button class="send-btn" onclick="sendPlanner()"><i class="fa fa-paper-plane"></i></button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
+    <div class="content" id="content"></div>
   </main>
 </div>
 
 <div id="toast" class="toast hidden"></div>
-
 <script src="app.js"></script>
 </body>
 </html>

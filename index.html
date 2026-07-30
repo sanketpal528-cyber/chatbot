@@ -2,105 +2,247 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Voxify-AI | Voice-Enabled AI Chatbot</title>
-<meta name="description" content="Voxify-AI — a voice-enabled AI chatbot by Sanket Pal. Chat by typing or speaking."/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Voxify AI — Full Assistant</title>
+<meta name="description" content="Voxify AI — Chat, Voice, PDF, Notes, Code, Study, Web Search"/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
 
-<div class="app-wrapper">
+<!-- API KEY SETUP MODAL -->
+<div id="setupModal" class="modal-overlay hidden">
+  <div class="modal-box">
+    <div class="modal-logo">🤖</div>
+    <h2>Welcome to Voxify AI</h2>
+    <p>Enter your <strong>Google Gemini API key</strong> to unlock all features.<br/>
+    Your key is stored <em>only in your browser</em> — never sent anywhere else.</p>
+    <div class="modal-input-row">
+      <input type="password" id="apiKeyInput" placeholder="Paste your Gemini API key here..."/>
+      <button onclick="toggleKeyVis()" class="eye-btn" id="eyeBtn"><i class="fa fa-eye"></i></button>
+    </div>
+    <a href="https://aistudio.google.com/apikey" target="_blank" class="modal-link">
+      <i class="fa fa-external-link-alt"></i> Get a free API key from Google AI Studio
+    </a>
+    <button class="btn-start" onclick="saveKey()">Start Using Voxify <i class="fa fa-arrow-right"></i></button>
+  </div>
+</div>
 
-  <!-- Sidebar -->
-  <aside class="sidebar">
-    <div class="sb-brand">
-      <div class="sb-logo">V</div>
-      <div>
-        <div class="sb-name">Voxify-AI</div>
-        <div class="sb-version">v1.0 · Standalone</div>
+<!-- MAIN APP -->
+<div class="app" id="app">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sb-header">
+      <div class="sb-brand">
+        <div class="sb-icon">V</div>
+        <div>
+          <div class="sb-title">Voxify AI</div>
+          <div class="sb-sub" id="modelBadge">gemini-1.5-flash</div>
+        </div>
       </div>
+      <button class="sidebar-close" onclick="toggleSidebar()"><i class="fa fa-xmark"></i></button>
     </div>
 
-    <div class="sb-status">
-      <span class="status-dot"></span>
-      <span>Online</span>
+    <nav class="sb-nav">
+      <button class="nav-btn active" data-mode="chat"     onclick="switchMode('chat')"><i class="fa fa-message"></i> Chat</button>
+      <button class="nav-btn"        data-mode="voice"    onclick="switchMode('voice')"><i class="fa fa-microphone"></i> Voice</button>
+      <button class="nav-btn"        data-mode="pdf"      onclick="switchMode('pdf')"><i class="fa fa-file-pdf"></i> PDF Reader</button>
+      <button class="nav-btn"        data-mode="notes"    onclick="switchMode('notes')"><i class="fa fa-note-sticky"></i> Notes</button>
+      <button class="nav-btn"        data-mode="code"     onclick="switchMode('code')"><i class="fa fa-code"></i> Code</button>
+      <button class="nav-btn"        data-mode="study"    onclick="switchMode('study')"><i class="fa fa-graduation-cap"></i> Study</button>
+      <button class="nav-btn"        data-mode="search"   onclick="switchMode('search')"><i class="fa fa-magnifying-glass"></i> Web Search</button>
+      <button class="nav-btn"        data-mode="planner"  onclick="switchMode('planner')"><i class="fa fa-list-check"></i> Planner</button>
+    </nav>
+
+    <div class="sb-section-label">Memory</div>
+    <div class="memory-info">
+      <span id="memCount">0 turns</span>
+      <button onclick="clearMemory()" class="mem-clear"><i class="fa fa-trash"></i> Clear</button>
     </div>
 
-    <div class="sb-divider"></div>
-
-    <div class="sb-section">Capabilities</div>
-    <ul class="sb-caps">
-      <li>💬 Text conversation</li>
-      <li>🎤 Voice input</li>
-      <li>🔊 Voice output (TTS)</li>
-      <li>🐍 Python &amp; AI help</li>
-      <li>☁️ Cloud tech topics</li>
-      <li>😄 Jokes &amp; fun</li>
-      <li>🧮 Basic math</li>
-      <li>⏰ Time &amp; date</li>
-    </ul>
-
-    <div class="sb-divider"></div>
-
-    <div class="sb-section">Try asking</div>
-    <div class="suggestions">
-      <button class="suggest-btn" onclick="insertSuggestion(this)">What is machine learning?</button>
-      <button class="suggest-btn" onclick="insertSuggestion(this)">Tell me a programming joke</button>
-      <button class="suggest-btn" onclick="insertSuggestion(this)">What time is it?</button>
-      <button class="suggest-btn" onclick="insertSuggestion(this)">Explain Python briefly</button>
-      <button class="suggest-btn" onclick="insertSuggestion(this)">What is AWS?</button>
+    <div class="sb-section-label">Settings</div>
+    <div class="setting-row">
+      <span>Voice Output</span>
+      <label class="toggle"><input type="checkbox" id="voiceOut" checked/><span class="tslider"></span></label>
     </div>
-
-    <div class="sb-footer">
-      <a href="https://github.com/sanketpal528-cyber/chatbot" target="_blank">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
-        GitHub Repo
-      </a>
-      <span>Built by Sanket Pal</span>
+    <div class="setting-row">
+      <span>Model</span>
+      <select id="modelSel" onchange="setModel()" class="mini-select">
+        <option value="gemini-1.5-flash">Flash (Fast)</option>
+        <option value="gemini-1.5-pro">Pro (Smart)</option>
+        <option value="gemini-2.0-flash-exp">2.0 Flash</option>
+      </select>
+    </div>
+    <div class="setting-row">
+      <button onclick="changeKey()" class="link-btn"><i class="fa fa-key"></i> Change API Key</button>
     </div>
   </aside>
 
-  <!-- Main chat area -->
-  <main class="chat-main">
-    <header class="chat-header">
-      <div class="ch-left">
-        <div class="ch-avatar">🤖</div>
-        <div>
-          <div class="ch-name">Voxify</div>
-          <div class="ch-sub">AI Assistant · Always online</div>
+  <!-- MAIN -->
+  <main class="main" id="mainArea">
+
+    <!-- TOP BAR -->
+    <div class="topbar">
+      <button class="menu-btn" onclick="toggleSidebar()"><i class="fa fa-bars"></i></button>
+      <div class="mode-title" id="modeTitle"><i class="fa fa-message"></i> Chat</div>
+      <div class="topbar-right">
+        <div class="status-dot-wrap"><span class="sdot"></span><span id="statusText">Ready</span></div>
+        <button class="icon-action" onclick="clearChat()" title="Clear chat"><i class="fa fa-broom"></i></button>
+      </div>
+    </div>
+
+    <!-- ══ CHAT MODE ══ -->
+    <div id="mode-chat" class="mode-panel active">
+      <div id="chatWindow" class="chat-window"></div>
+      <div class="input-area">
+        <div class="input-box">
+          <button id="micBtn" class="mic-btn" title="Voice input" onclick="toggleMic()"><i class="fa fa-microphone"></i></button>
+          <textarea id="chatInput" rows="1" placeholder="Ask anything..." onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+          <button class="send-btn" onclick="sendChat()"><i class="fa fa-paper-plane"></i></button>
+        </div>
+        <div class="input-hint">Shift+Enter for new line · Enter to send · 🎤 for voice</div>
+      </div>
+    </div>
+
+    <!-- ══ VOICE MODE ══ -->
+    <div id="mode-voice" class="mode-panel">
+      <div class="voice-center">
+        <button id="voiceOrb" class="voice-orb" onclick="toggleVoiceMode()">
+          <i class="fa fa-microphone" id="voiceOrbIcon"></i>
+        </button>
+        <div id="voiceStatus" class="voice-status">Click orb to speak</div>
+        <div id="voiceTranscript" class="voice-transcript"></div>
+        <div id="voiceResponse" class="voice-response"></div>
+      </div>
+    </div>
+
+    <!-- ══ PDF MODE ══ -->
+    <div id="mode-pdf" class="mode-panel">
+      <div class="pdf-panel">
+        <div class="pdf-upload-area" id="pdfUploadArea">
+          <input type="file" id="pdfFile" accept=".pdf" onchange="loadPDF(event)" hidden/>
+          <label for="pdfFile" class="pdf-upload-label">
+            <i class="fa fa-file-pdf"></i>
+            <span>Drop a PDF here or click to upload</span>
+            <small>Ask questions about the document using AI</small>
+          </label>
+        </div>
+        <div id="pdfChat" class="pdf-chat hidden">
+          <div class="pdf-info" id="pdfInfo"></div>
+          <div id="pdfMessages" class="chat-window"></div>
+          <div class="input-area">
+            <div class="input-box">
+              <textarea id="pdfInput" rows="1" placeholder="Ask about the PDF..." onkeydown="handlePdfKey(event)" oninput="autoResize(this)"></textarea>
+              <button class="send-btn" onclick="askPDF()"><i class="fa fa-paper-plane"></i></button>
+            </div>
+          </div>
         </div>
       </div>
-      <div class="ch-actions">
-        <button class="icon-btn" title="Clear chat" onclick="clearChat()">🗑️</button>
-        <button class="icon-btn" title="Toggle voice output" id="voiceToggle" onclick="toggleVoice()">🔊</button>
-      </div>
-    </header>
-
-    <div id="chatWindow" class="chat-window"></div>
-
-    <div class="chat-input-area">
-      <div class="input-row">
-        <button id="micBtn" class="mic-btn" title="Click to speak">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.91-3c-.49 0-.9.36-.98.85C16.52 14.2 14.47 16 12 16s-4.52-1.8-4.93-4.15c-.08-.49-.49-.85-.98-.85-.61 0-1.09.54-1 1.14.49 3 2.89 5.35 5.91 5.78V20c0 .55.45 1 1 1s1-.45 1-1v-2.08c3.02-.43 5.42-2.78 5.91-5.78.1-.6-.39-1.14-1-1.14z"/>
-          </svg>
-        </button>
-        <input type="text" id="textInput" placeholder="Message Voxify..." autocomplete="off"/>
-        <button id="sendBtn" class="send-btn">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
-          </svg>
-        </button>
-      </div>
-      <div class="input-hint">Press Enter to send · Click 🎤 to speak · This chatbot works offline</div>
     </div>
-  </main>
 
+    <!-- ══ NOTES MODE ══ -->
+    <div id="mode-notes" class="mode-panel">
+      <div class="notes-panel">
+        <div class="notes-toolbar">
+          <button class="note-btn" onclick="newNote()"><i class="fa fa-plus"></i> New</button>
+          <button class="note-btn" onclick="saveNote()"><i class="fa fa-floppy-disk"></i> Save</button>
+          <button class="note-btn" onclick="aiEnhanceNote()"><i class="fa fa-wand-magic-sparkles"></i> AI Enhance</button>
+          <button class="note-btn danger" onclick="deleteNote()"><i class="fa fa-trash"></i> Delete</button>
+        </div>
+        <div class="notes-layout">
+          <div class="notes-list" id="notesList"></div>
+          <div class="notes-editor">
+            <input type="text" id="noteTitle" placeholder="Note title..." class="note-title-input"/>
+            <textarea id="noteBody" placeholder="Start writing..." class="note-body"></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ CODE MODE ══ -->
+    <div id="mode-code" class="mode-panel">
+      <div id="codeMessages" class="chat-window"></div>
+      <div class="input-area">
+        <div class="code-quick-btns">
+          <button onclick="codeQuick('Explain this code: ')">Explain</button>
+          <button onclick="codeQuick('Debug this code: ')">Debug</button>
+          <button onclick="codeQuick('Optimize this code: ')">Optimize</button>
+          <button onclick="codeQuick('Convert to Python: ')">→ Python</button>
+          <button onclick="codeQuick('Write unit tests for: ')">Tests</button>
+          <button onclick="codeQuick('Add comments to: ')">Comments</button>
+        </div>
+        <div class="input-box">
+          <textarea id="codeInput" rows="1" placeholder="Paste code or describe what you need..." onkeydown="handleCodeKey(event)" oninput="autoResize(this)"></textarea>
+          <button class="send-btn" onclick="sendCode()"><i class="fa fa-paper-plane"></i></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ STUDY MODE ══ -->
+    <div id="mode-study" class="mode-panel">
+      <div class="study-panel">
+        <div class="study-tabs">
+          <button class="stab active" onclick="setStudyTab('explain',this)">Explain</button>
+          <button class="stab" onclick="setStudyTab('quiz',this)">Quiz Me</button>
+          <button class="stab" onclick="setStudyTab('summary',this)">Summarize</button>
+          <button class="stab" onclick="setStudyTab('flashcard',this)">Flashcards</button>
+          <button class="stab" onclick="setStudyTab('practice',this)">Practice Q</button>
+        </div>
+        <div id="studyMessages" class="chat-window"></div>
+        <div class="input-area">
+          <div class="input-box">
+            <textarea id="studyInput" rows="1" placeholder="Enter a topic or paste text to study..." onkeydown="handleStudyKey(event)" oninput="autoResize(this)"></textarea>
+            <button class="send-btn" onclick="sendStudy()"><i class="fa fa-paper-plane"></i></button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SEARCH MODE ══ -->
+    <div id="mode-search" class="mode-panel">
+      <div id="searchMessages" class="chat-window"></div>
+      <div class="input-area">
+        <div class="input-box">
+          <textarea id="searchInput" rows="1" placeholder="Ask anything — Voxify will research and answer..." onkeydown="handleSearchKey(event)" oninput="autoResize(this)"></textarea>
+          <button class="send-btn" onclick="sendSearch()"><i class="fa fa-magnifying-glass"></i></button>
+        </div>
+        <div class="input-hint">Voxify uses AI knowledge + real-time context to answer research questions</div>
+      </div>
+    </div>
+
+    <!-- ══ PLANNER MODE ══ -->
+    <div id="mode-planner" class="mode-panel">
+      <div class="planner-panel">
+        <div class="planner-top">
+          <div class="planner-left">
+            <h3>Tasks & Reminders</h3>
+            <div class="task-input-row">
+              <input type="text" id="taskInput" placeholder="Add a task..." onkeydown="if(event.key==='Enter')addTask()"/>
+              <input type="datetime-local" id="taskTime"/>
+              <button onclick="addTask()" class="add-task-btn"><i class="fa fa-plus"></i></button>
+            </div>
+            <div id="taskList" class="task-list"></div>
+          </div>
+          <div class="planner-right">
+            <h3>AI Planner</h3>
+            <div id="plannerMessages" class="chat-window small"></div>
+            <div class="input-box">
+              <textarea id="plannerInput" rows="1" placeholder="Describe your goal — AI will make a plan..." onkeydown="handlePlannerKey(event)" oninput="autoResize(this)"></textarea>
+              <button class="send-btn" onclick="sendPlanner()"><i class="fa fa-paper-plane"></i></button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
 </div>
 
-<p id="status" class="status-bar"></p>
+<div id="toast" class="toast hidden"></div>
 
-<script src="main.js"></script>
+<script src="app.js"></script>
 </body>
 </html>

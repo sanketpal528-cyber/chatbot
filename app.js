@@ -5,7 +5,7 @@
 
 // ── Config ──────────────────────────────────────────────
 let API_KEY   = localStorage.getItem('voxify_key') || '';
-let MODEL     = localStorage.getItem('voxify_model') || 'gemini-1.5-flash';
+let MODEL     = localStorage.getItem('voxify_model') || 'gemini-2.5-flash';
 let memory    = JSON.parse(localStorage.getItem('voxify_memory') || '[]');
 let notes     = JSON.parse(localStorage.getItem('voxify_notes') || '[]');
 let tasks     = JSON.parse(localStorage.getItem('voxify_tasks') || '[]');
@@ -21,6 +21,12 @@ const GEMINI_URL = (model) =>
 
 // ── Init ────────────────────────────────────────────────
 window.addEventListener('load', () => {
+  // Clear old model names that no longer work
+  const oldModels = ['gemini-1.5-flash','gemini-1.5-pro','gemini-2.0-flash-exp','gemini-2.0-flash'];
+  if (oldModels.includes(MODEL)) {
+    MODEL = 'gemini-2.5-flash';
+    localStorage.setItem('voxify_model', MODEL);
+  }
   if (!API_KEY) {
     document.getElementById('setupModal').classList.remove('hidden');
   } else {
@@ -291,25 +297,56 @@ function toggleVoiceMode() {
 }
 
 // ── VOICE INPUT (chat mic button) ────────────────────────
+let chatRecognizer = null;
 let chatMicActive = false;
+
 function toggleMic() {
-  if (!recognizer) { showToast('Voice not supported', 'error'); return; }
+  if (!SR) { showToast('Voice not supported in this browser', 'error'); return; }
   const btn = document.getElementById('micBtn');
+
   if (chatMicActive) {
-    recognizer.stop(); chatMicActive = false;
-    btn.classList.remove('recording'); return;
+    if (chatRecognizer) chatRecognizer.stop();
+    chatMicActive = false;
+    btn.classList.remove('recording');
+    return;
   }
+
   chatMicActive = true;
   btn.classList.add('recording');
-  const tmpRec = new SR();
-  tmpRec.lang = 'en-US'; tmpRec.interimResults = false;
-  tmpRec.onresult = (e) => {
-    document.getElementById('chatInput').value = e.results[0][0].transcript;
-    btn.classList.remove('recording'); chatMicActive = false;
+
+  chatRecognizer = new SR();
+  chatRecognizer.lang = 'en-US';
+  chatRecognizer.interimResults = false;
+  chatRecognizer.maxAlternatives = 1;
+
+  chatRecognizer.onresult = (e) => {
+    const txt = e.results[0][0].transcript;
+    document.getElementById('chatInput').value = txt;
+    autoResize(document.getElementById('chatInput'));
+    btn.classList.remove('recording');
+    chatMicActive = false;
+    // Auto-send after voice input
+    setTimeout(() => sendChat(), 300);
   };
-  tmpRec.onerror = () => { btn.classList.remove('recording'); chatMicActive = false; };
-  tmpRec.onend   = () => { btn.classList.remove('recording'); chatMicActive = false; };
-  tmpRec.start();
+
+  chatRecognizer.onerror = (e) => {
+    showToast('Voice error: ' + e.error, 'error');
+    btn.classList.remove('recording');
+    chatMicActive = false;
+  };
+
+  chatRecognizer.onend = () => {
+    btn.classList.remove('recording');
+    chatMicActive = false;
+  };
+
+  try {
+    chatRecognizer.start();
+  } catch(e) {
+    showToast('Could not start microphone: ' + e.message, 'error');
+    btn.classList.remove('recording');
+    chatMicActive = false;
+  }
 }
 
 // ── TTS ──────────────────────────────────────────────────

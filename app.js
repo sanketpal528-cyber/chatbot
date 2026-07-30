@@ -5,7 +5,7 @@
 
 // ── Config ──────────────────────────────────────────────
 let API_KEY   = localStorage.getItem('voxify_key') || '';
-let MODEL     = localStorage.getItem('voxify_model') || 'gemini-2.5-flash';
+let MODEL     = localStorage.getItem('voxify_model') || 'gemini-3.5-flash-lite';
 let memory    = JSON.parse(localStorage.getItem('voxify_memory') || '[]');
 let notes     = JSON.parse(localStorage.getItem('voxify_notes') || '[]');
 let tasks     = JSON.parse(localStorage.getItem('voxify_tasks') || '[]');
@@ -22,9 +22,11 @@ const GEMINI_URL = (model) =>
 // ── Init ────────────────────────────────────────────────
 window.addEventListener('load', () => {
   // Clear old model names that no longer work
-  const oldModels = ['gemini-1.5-flash','gemini-1.5-pro','gemini-2.0-flash-exp','gemini-2.0-flash'];
+  const oldModels = ['gemini-1.5-flash','gemini-1.5-pro','gemini-2.0-flash-exp',
+                     'gemini-2.0-flash','gemini-2.0-flash-lite','gemini-2.5-flash',
+                     'gemini-2.5-pro','gemini-2.5-flash-lite'];
   if (oldModels.includes(MODEL)) {
-    MODEL = 'gemini-2.5-flash';
+    MODEL = 'gemini-3.5-flash-lite';
     localStorage.setItem('voxify_model', MODEL);
   }
   if (!API_KEY) {

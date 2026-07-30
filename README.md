@@ -1,73 +1,85 @@
-# Voxify-AI
+﻿# 🤖 Voxify AI — Full AI Assistant
 
-A voice-enabled AI chatbot with a FastAPI backend and a lightweight
-HTML/JS frontend. Chat by typing or speaking — Voxify replies in text
-and speaks the answer back to you.
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-GitHub%20Pages-00d4ff?style=for-the-badge&logo=github)](https://sanketpal528-cyber.github.io/chatbot/)
+[![Built with](https://img.shields.io/badge/Powered%20by-Gemini%20AI-4285F4?style=for-the-badge&logo=google)](https://ai.google.dev/)
+[![License](https://img.shields.io/badge/License-MIT-39ff14?style=for-the-badge)](LICENSE)
 
-## Features
+> A fully client-side AI assistant powered by Google Gemini API — no backend required. Works directly in the browser.
 
-- 💬 Text chat via a REST API (`/chat`)
-- 🎤 Voice input in the browser (Web Speech API) — no extra setup needed
-- 🎙️ Server-side voice upload endpoint (`/voice-chat`) for non-browser clients
-- 🔊 Spoken replies via the browser's speech synthesis
-- 🧠 Per-session conversation memory
-- 🛠️ Pluggable "tools" (time, date, and easy to add more)
-- 📄 Clean seam for swapping in a real LLM later
+## 🌐 Live Website
 
-## Project Structure
+### 👉 [https://sanketpal528-cyber.github.io/chatbot/](https://sanketpal528-cyber.github.io/chatbot/)
+
+---
+
+## ✨ Features
+
+| Feature | Description |
+|---|---|
+| 💬 **Chat** | Full AI conversation with 50-turn memory using Gemini |
+| 🎤 **Voice Input** | Speak to Voxify using your microphone (Web Speech API) |
+| 🔊 **Voice Output** | Voxify speaks responses back using TTS |
+| 📄 **PDF Reader** | Upload any PDF — AI reads and answers questions about it |
+| 📝 **Notes** | Create, edit, save notes with AI enhancement |
+| 💻 **Code Assistant** | Write, debug, explain, optimize code with quick buttons |
+| 🎓 **Study Assistant** | Explain, Quiz, Summarize, Flashcards, Practice Questions |
+| 🔍 **Research** | Ask any question — Gemini researches and answers |
+| 📋 **AI Planner** | Task list with reminders + AI goal-to-plan generator |
+
+---
+
+## 🚀 How to Use
+
+1. Open the **[live site](https://sanketpal528-cyber.github.io/chatbot/)**
+2. Get a free Gemini API key from **[Google AI Studio](https://aistudio.google.com/apikey)**
+3. Enter your key on first launch — saved only in your browser
+4. Start chatting!
+
+> **Your API key is stored only in your browser's localStorage — it never leaves your device.**
+
+---
+
+## 🛠️ Tech Stack
+
+| Technology | Purpose |
+|---|---|
+| HTML5 / CSS3 / JavaScript | Frontend UI |
+| Google Gemini API (3.5/3.6) | AI brain |
+| Web Speech API | Voice input & output |
+| PDF.js | PDF reading |
+| localStorage | Memory, notes, tasks |
+| GitHub Pages | Free hosting |
+
+---
+
+## 📁 Project Structure
 
 ```
-Voxify-AI/
-├── backend/       FastAPI app, chatbot logic, speech transcription
-├── frontend/      HTML/CSS/JS chat UI with mic button
-├── database/      SQLite schema (for future durable storage)
-├── memory/        Session conversation history
-├── uploads/        Uploaded audio files land here
-├── prompts/       System prompt / persona definitions
-├── tools/         Small callable tools the chatbot can invoke
-├── config/        Centralized settings from .env
-├── logs/          Application logs
-├── tests/         Pytest test suite
-├── docs/          Architecture documentation
-├── requirements.txt
-├── .env
-├── main.py
+chatbot/
+├── index.html       # Full app UI — all 8 modes
+├── style.css        # Dark cyberpunk theme
+├── app.js           # All logic — Gemini API, voice, PDF, notes
+├── .github/
+│   └── workflows/
+│       └── static.yml   # Auto-deploy to GitHub Pages
 └── README.md
 ```
 
-See `docs/architecture.md` for a full breakdown of how the pieces fit together.
+---
 
-## Setup
+## 🔑 API Key Setup
 
-```bash
-# 1. Create a virtual environment (recommended)
-python -m venv venv
-source venv/bin/activate      # Windows: venv\Scripts\activate
+1. Visit [aistudio.google.com/apikey](https://aistudio.google.com/apikey)
+2. Click **"Create API Key"**
+3. Copy the key
+4. Open the app → paste your key → click Start
 
-# 2. Install dependencies
-pip install -r requirements.txt
+---
 
-# 3. Run the backend
-python main.py
-```
+## 👨‍💻 Developer
 
-The API will be live at `http://localhost:8000` (docs at `/docs`).
+**Sanket Pal** — [@sanketpal528-cyber](https://github.com/sanketpal528-cyber)
 
-## Using the app
+---
 
-Open `frontend/index.html` directly in your browser (double-click it,
-or use a simple static server). Type a message and press Send, or
-click the 🎤 button and speak — your browser will transcribe it and
-send it to Voxify automatically.
-
-## Running tests
-
-```bash
-pytest
-```
-
-## Next steps
-
-- Swap the rule-based replies in `backend/chatbot.py` for a real LLM call
-- Add more tools in `tools/tool_registry.py`
-- Move session memory from JSON to the SQLite database in `database/db.py`
+*Built with ❤️ using HTML · CSS · JavaScript · Google Gemini API*
